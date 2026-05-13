@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Interactive Magnetic Text Animation with Custom Cursor Effect</title>
+    
+
+  </head>
+    
+  <body>
+  <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+#animation-container {
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+    cursor: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#text-container {
+    position: relative;
+    font-family: 'Arial', sans-serif;
+    font-size: 6rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.letter {
+    display: inline-block;
+    transition: transform 0.2s ease-out;
+}
+
+#cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+
+#instruction {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-family: 'Arial', sans-serif;
+    font-size: 1rem;
+    color: #888;
+    text-align: right;
+}
+</style>
+
+<div id="animation-container">
+    <div id="text-container"></div>
+    <div id="cursor"></div>
+    <div id="instruction">Move your cursor over the text</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const text = "MAGNETIC";
+    const container = document.getElementById('text-container');
+    const cursor = document.getElementById('cursor');
+
+    text.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.classList.add('letter');
+        container.appendChild(span);
+    });
+
+    const letters = document.querySelectorAll('.letter');
+    const animationContainer = document.getElementById('animation-container');
+
+    function lerp(start, end, amount) {
+        return (1 - amount) * start + amount * end;
+    }
+
+    animationContainer.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        letters.forEach((letter) => {
+            const rect = letter.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const distanceX = mouseX - centerX;
+            const distanceY = mouseY - centerY;
+            const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+            const maxDistance = 200;
+
+            if (distance < maxDistance) {
+                const force = (maxDistance - distance) / maxDistance;
+                const moveX = lerp(0, distanceX, force * 0.5);
+                const moveY = lerp(0, distanceY, force * 0.5);
+                letter.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                letter.style.transitionDuration = '0.2s';
+            } else {
+                letter.style.transform = 'translate(0, 0)';
+                letter.style.transitionDuration = '0.5s';
+            }
+        });
+
+        cursor.style.left = `${mouseX}px`;
+        cursor.style.top = `${mouseY}px`;
+    });
+
+    animationContainer.addEventListener('mouseleave', () => {
+        letters.forEach((letter) => {
+            letter.style.transform = 'translate(0, 0)';
+            letter.style.transitionDuration = '0.5s';
+        });
+    });
+});
+</script>
+    
+  </body>
+  
+</html>
